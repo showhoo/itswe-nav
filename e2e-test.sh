@@ -351,6 +351,18 @@ U=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.d
 eq "simuser 已入库" "$U" "ok"
 R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=site.set&mail_verify=0" $BASE/api.php); r "$R"
 has "关闭邮箱验证 ok" '"ok":true' $RF
+# —— 每 IP 发码限速：跨邮箱 10 封/小时，第 11 次起拒绝 ——
+# 先把 SMTP 显式重设回不可达端口（此前的 mock 会话段把 SMTP 指向了常驻 mock 的 2525）；
+# 发送尝试前计数、失败同样计数：前 10 次均到达 SMTP 并报连接失败，第 11-12 次被限速拒绝
+R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=site.set&smtp_host=127.0.0.1&smtp_port=1" $BASE/api.php)
+CONN_FAIL=0; RATE_LIM=0
+for i in $(seq 1 12); do
+  R=$(curl -s -b $JAR -d "csrf=$CSRF&act=mail.send_code&email=lim$i@example.com&purpose=register" $BASE/api.php)
+  echo "$R" | grep -q '连接失败' && CONN_FAIL=$((CONN_FAIL+1)) || true
+  echo "$R" | grep -q '过于频繁' && RATE_LIM=$((RATE_LIM+1)) || true
+done
+[ "$CONN_FAIL" = "10" ] && ok "每IP限速: 前10次到达SMTP" || bad "每IP限速放行数异常: $CONN_FAIL"
+[ "$RATE_LIM" = "2" ] && ok "第11-12次被限速拒绝" || bad "限速未生效: RATE_LIM=$RATE_LIM R=$R"
 R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=site.set&smtp_host=&smtp_port=&smtp_user=&smtp_pass=&smtp_from=" $BASE/api.php); r "$R"
 has "SMTP 配置清空 ok" '"ok":true' $RF
 

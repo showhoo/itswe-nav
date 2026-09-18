@@ -7,11 +7,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/smtp.php';
 require_once __DIR__ . '/i18n.php';
+require_once __DIR__ . '/net.php';
 
 const MAIL_CODE_TTL = 600;        // 验证码有效期 10 分钟
 const MAIL_COOLDOWN = 60;         // 同邮箱发送冷却 60 秒
 const MAIL_MAX_ATTEMPTS = 5;      // 校验失败次数上限
 const MAIL_HOURLY_LIMIT = 5;      // 同邮箱每小时最多发送封数
+const MAIL_IP_HOURLY = 10;        // 每 IP 每小时跨邮箱发送上限
 const MAIL_PURPOSES = ['register', 'reset'];
 
 function mail_configured(): bool {
@@ -47,6 +49,23 @@ function mail_send_code(string $email, string $purpose, bool $isIpTrusted = fals
             $hourCount = (int)($row['hour_count'] ?? 0) + 1;
             if ($hourCount > MAIL_HOURLY_LIMIT) return t('err_mail_limit');
         }
+    }
+    // 每 IP 限速：跨邮箱每小时最多 MAIL_IP_HOURLY 次；发送尝试前计数——发送失败同样消耗配额，防对故障 SMTP 无限重试刷接口
+    $pdo->exec('DELETE FROM mail_throttle WHERE window_start < ' . ($now - 86400));
+    $ipKey = hash('sha256', client_ip());
+    $st = $pdo->prepare('SELECT cnt, window_start FROM mail_throttle WHERE ip_hash = ? AND purpose = ?');
+    $st->execute([$ipKey, $purpose]);
+    $thr = $st->fetch();
+    if ($thr && $now - (int)$thr['window_start'] < 3600 && (int)$thr['cnt'] >= MAIL_IP_HOURLY) {
+        return t('err_mail_ip_limit');
+    }
+    if ($thr && $now - (int)$thr['window_start'] < 3600) {
+        $pdo->prepare('UPDATE mail_throttle SET cnt = cnt + 1 WHERE ip_hash = ? AND purpose = ?')
+            ->execute([$ipKey, $purpose]);
+    } else {
+        $pdo->prepare('INSERT INTO mail_throttle (ip_hash, purpose, cnt, window_start) VALUES (?,?,1,?)
+                       ON CONFLICT(ip_hash, purpose) DO UPDATE SET cnt = 1, window_start = excluded.window_start')
+            ->execute([$ipKey, $purpose, $now]);
     }
     $code = (string)random_int(100000, 999999);
     $codeHash = hash('sha256', $code . '|' . $email . '|' . $purpose);

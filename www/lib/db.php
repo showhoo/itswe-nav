@@ -8,7 +8,7 @@ function db_path(): string {
     return getenv('DB_PATH') ?: (__DIR__ . '/../../data/itswe-nav.db');
 }
 
-const DB_VERSION = 4;   // 当前结构版本；结构变更须新增迁移步骤并递增
+const DB_VERSION = 5;   // 当前结构版本；结构变更须新增迁移步骤并递增
 
 function db(): PDO {
     static $pdo = null;
@@ -139,6 +139,16 @@ function migrate(PDO $pdo): void {
                 }
                 if (!$has) $p->exec("ALTER TABLE mail_codes ADD COLUMN $col INTEGER NOT NULL DEFAULT 0");
             }
+        },
+        5 => function (PDO $p) {   // users.email 部分唯一索引（空邮箱不参与）+ 每 IP 发码限速表
+            $p->exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique ON users(email) WHERE email <> ''");
+            $p->exec('CREATE TABLE IF NOT EXISTS mail_throttle (
+                ip_hash      TEXT    NOT NULL,
+                purpose      TEXT    NOT NULL,
+                cnt          INTEGER NOT NULL DEFAULT 0,
+                window_start INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY (ip_hash, purpose)
+            )');
         },
     ];
     foreach ($migrations as $to => $fn) {

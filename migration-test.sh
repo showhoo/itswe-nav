@@ -16,6 +16,10 @@ COL=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav
 [ "$COL" = "has" ] && ok "url_lan 列已自动补齐" || bad "url_lan 列缺失"
 T=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); echo \$p->query(\"SELECT COUNT(*) FROM sqlite_master WHERE name='login_throttle'\")->fetchColumn();")
 [ "$T" = "1" ] && ok "login_throttle 表已就绪" || bad "login_throttle 缺失"
+T=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); echo \$p->query(\"SELECT COUNT(*) FROM sqlite_master WHERE name='mail_throttle'\")->fetchColumn();")
+[ "$T" = "1" ] && ok "mail_throttle 表已就绪" || bad "mail_throttle 缺失"
+I=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); echo \$p->query(\"SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='idx_users_email_unique'\")->fetchColumn();")
+[ "$I" = "1" ] && ok "users.email 唯一索引已就绪" || bad "唯一索引缺失"
 R=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); \$st=\$p->query('SELECT title,url_lan FROM items'); foreach(\$st as \$r) echo \$r['title'],'|',\$r['url_lan'];")
 echo "$R" | grep -q '老卡片' && ok "存量数据无损 ($R)" || bad "存量数据异常 ($R)"
 JAR=/tmp/mig-jar.txt; rm -f $JAR
