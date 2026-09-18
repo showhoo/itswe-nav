@@ -5,11 +5,15 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+- *(no unreleased changes yet)*
+
+## [v1.0.1] - 2026-09-19
+
 ### Fixed
 - backup: backup export/import now keeps users.email — previously a single export→import cycle silently wiped every user's e-mail, breaking password recovery and e-mail binding; old-format backups still import (e-mail treated as empty); backup format version bumped to 2 (v1.0.0 code cannot import new-format backups — a known limitation)
 - smtp: no blank line is sent to the server after connecting — that blank line triggers a 500 on strict servers such as Postfix and pollutes the subsequent EHLO, making verification codes / password recovery / test e-mails all unusable; e2e adds a mock-SMTP real-session test case
-- mail: verification-code sending now has a per-IP, per-hour cap of 10 across mailboxes (failed sends count too), narrowing the relay-abuse surface of the unauthenticated endpoint against the admin SMTP
-- db: users.email gets a partial unique index (empty e-mails excluded); concurrent same-e-mail registrations are now backed by a database constraint instead of an application-level race, and the conflict message distinguishes "e-mail already in use"; if an existing database already contains duplicate non-empty emails, the unique-index creation at upgrade will fail loudly (additive-migration policy) — clean up duplicates before upgrading
+- mail: verification-code sending now has a per-IP, per-flow cap (10/hour each for registration and password-reset) on cross-mailbox sends (failed sends count too), narrowing the relay-abuse surface of the unauthenticated endpoint against the admin SMTP
+- db: users.email gets a partial unique index (empty e-mails excluded); concurrent same-e-mail registrations are now backed by a database constraint instead of an application-level race, and the conflict message distinguishes "e-mail already in use"; if an existing database already contains duplicate non-empty e-mail addresses, the unique-index creation at upgrade will fail loudly (additive-migration policy) — clean up duplicates before upgrading
 - i18n: duplicate keys cleaned from the zh-CN dictionary; missing mail_subject_reset / err_mail_limit keys added to the en dictionary (previously the English UI showed key names for these strings)
 - admin: the admin `?tab=` parameter is now whitelisted; invalid values no longer interrupt the page's script initialization
 
@@ -35,3 +39,4 @@ First public preview. Single-container deployment (PHP 8.3 + SQLite), zero third
 - 55 coverage + 148 e2e (incl. password-recovery flow, data export, cross-group move regression) + 8 migration assertions (`run-tests-ci.sh` one-shot)
 
 [v1.0.0]: https://github.com/showhoo/itswe-nav/releases/tag/v1.0.0
+[v1.0.1]: https://github.com/showhoo/itswe-nav/releases/tag/v1.0.1
