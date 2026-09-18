@@ -61,7 +61,7 @@ docker compose up -d
 ```
 
 > compose 默认从源码构建；拉镜像部署请把 `docker-compose.yml` 里的 `build: .` 与 `image:` 行换成
-> `image: ghcr.io/showhoo/itswe-nav:v1.0.0-beta`（发布后可用）。
+> `image: ghcr.io/showhoo/itswe-nav:v1.0.0`。
 
 ### 方式二：源码构建
 

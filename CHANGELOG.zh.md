@@ -7,7 +7,7 @@
 
 - *（暂无未发布变更）*
 
-## [v1.0.0-beta] - 2026-09-18
+## [v1.0.0] - 2026-09-18
 
 首个公开预览版本。单容器部署（PHP 8.3 + SQLite），零第三方 PHP 依赖。
 
@@ -28,4 +28,4 @@
 ### 测试
 - 覆盖测试 55 项 + e2e 148 项（含找回密码全流程、数据导出与跨组移动回归）+ 老库迁移 8 项（`run-tests-ci.sh` 一键运行）
 
-[v1.0.0-beta]: https://github.com/showhoo/itswe-nav/releases/tag/v1.0.0-beta
+[v1.0.0]: https://github.com/showhoo/itswe-nav/releases/tag/v1.0.0

@@ -61,7 +61,7 @@ docker compose up -d
 ```
 
 > The bundled compose file builds from source. To run the prebuilt image, replace the
-> `build: .` / `image:` lines with `image: ghcr.io/showhoo/itswe-nav:v1.0.0-beta` (available once released).
+> `build: .` / `image:` lines with `image: ghcr.io/showhoo/itswe-nav:v1.0.0`.
 
 ### Option B: build from source
 

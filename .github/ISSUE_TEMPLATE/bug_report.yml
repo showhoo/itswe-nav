@@ -21,7 +21,7 @@ body:
     attributes:
       label: 版本 / Version
       description: 镜像 tag 或 commit hash / image tag or commit hash
-      placeholder: e.g. v1.0.0-beta / main@2f53975
+      placeholder: e.g. v1.0.0 / main
     validations:
       required: true
 

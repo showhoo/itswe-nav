@@ -7,7 +7,7 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 - *(no unreleased changes yet)*
 
-## [v1.0.0-beta] - 2026-09-18
+## [v1.0.0] - 2026-09-18
 
 First public preview. Single-container deployment (PHP 8.3 + SQLite), zero third-party PHP dependencies.
 
@@ -28,4 +28,4 @@ First public preview. Single-container deployment (PHP 8.3 + SQLite), zero third
 ### Tests
 - 55 coverage + 148 e2e (incl. password-recovery flow, data export, cross-group move regression) + 8 migration assertions (`run-tests-ci.sh` one-shot)
 
-[v1.0.0-beta]: https://github.com/showhoo/itswe-nav/releases/tag/v1.0.0-beta
+[v1.0.0]: https://github.com/showhoo/itswe-nav/releases/tag/v1.0.0
