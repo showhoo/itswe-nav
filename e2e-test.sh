@@ -327,6 +327,17 @@ R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=site.set&smtp_host=127.0.0.1&smtp_port=
 has "SMTP 配置保存 ok" '"ok":true' $RF
 R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=mail.test&to=t@example.com" $BASE/api.php); r "$R"
 has "测试邮件有结构化结果" '"ok"' $RF
+# —— SMTP 真实会话（mock）：验证空行修复——首个客户端命令必须是 EHLO ——
+docker cp "$SD/tests/mock-smtp.php" itswe-nav-test:/tmp/mock-smtp.php >/dev/null
+docker exec -d itswe-nav-test php /tmp/mock-smtp.php
+for i in 1 2 3 4 5 6 7 8 9 10; do docker exec itswe-nav-test php -r 'exit(@fsockopen("127.0.0.1",2525)?0:1);' 2>/dev/null && break; sleep 0.2; done
+R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=site.set&smtp_host=127.0.0.1&smtp_port=2525&smtp_secure=none&smtp_user=t@example.com&smtp_pass=pw&smtp_from=t@example.com" $BASE/api.php); r "$R"
+has "mock SMTP 配置保存" '"ok":true' $RF
+R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=mail.test&to=t@example.com" $BASE/api.php); r "$R"
+has "mock SMTP 真会话发送成功" '"ok":true' $RF
+LOG=$(docker exec itswe-nav-test cat /tmp/mock-smtp.log)
+echo "$LOG" | head -1 | grep -q 'EHLO' && ok "SMTP 首命令为 EHLO（无空行）" || bad "SMTP 首命令异常: [$(echo "$LOG" | head -2 | tr '\n' '|')]"
+echo "$LOG" | grep -q 'DATA' && ok "SMTP 会话完成 DATA 交互" || bad "SMTP 会话缺 DATA"
 R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=site.set&mail_verify=1" $BASE/api.php); r "$R"
 has "开启邮箱验证 ok" '"ok":true' $RF
 R=$(curl -s -b $JAR -d "csrf=$CSRF&act=register&username=nocode&password=x123456&email=nocode@example.com&agree=1" $BASE/register.php); r "$R"

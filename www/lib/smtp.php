@@ -52,7 +52,9 @@ function smtp_send(string $to, string $subject, string $html): ?string {
         return str_starts_with($resp, $expect) ? null : "$step 失败: " . trim($resp);
     };
 
-    if ($err = $talk('', '220', '连接')) { fclose($fp); return $err; }
+    // 只读横幅不发送任何命令：空命令 CRLF 会被严格服务器（Postfix 等）回 500 并污染 EHLO 读取
+    $banner = $read();
+    if (!str_starts_with($banner, '220')) { fclose($fp); return '连接失败: ' . trim($banner); }
     if ($err = $talk('EHLO itswe-nav', '250', 'EHLO')) { fclose($fp); return $err; }
 
     if ($c['secure'] === 'tls') {
