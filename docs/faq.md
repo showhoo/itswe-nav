@@ -22,7 +22,7 @@ Configure SMTP in site settings first (host/port/user/pass/encryption; SSL, TLS 
 - Otherwise: restore from a full backup, or stop the container and edit `data/itswe-nav.db` to replace that user's password hash (bcrypt)
 
 ### 7. How do I back up and restore?
-See [install.md backups](install.md#backup--restore). Key point: SQLite runs in WAL mode — prefer the admin "Export backup" (full JSON) or a stopped-container cold copy over `cp`-ing a live database file.
+See [install.md backups](install.md#backup--restore). Key point: SQLite runs in WAL mode — prefer the admin "Export backup" (full JSON) or a stopped-container cold copy over `cp`-ing a live database file. Backups contain all user data (email included since v1.0.1). Backups exported by v1.0.0 lack the email field — after importing one, accounts must re-bind their email to use password recovery.
 
 ### 8. Change the port / disable Docker management?
 Change `ports` in compose; for Docker management remove the sock mount line and the panel degrades gracefully.
