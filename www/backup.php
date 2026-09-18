@@ -15,7 +15,7 @@ $pdo = db();
 /** 各表可导入/导出的列白名单 */
 function backup_columns(): array {
     return [
-        'users'  => ['id', 'username', 'password_hash', 'role', 'status', 'created_at'],
+        'users'  => ['id', 'username', 'password_hash', 'email', 'role', 'status', 'created_at'],
         'groups' => ['id', 'user_id', 'name', 'sort'],
         'items'  => ['id', 'user_id', 'group_id', 'title', 'url', 'url_lan', 'icon', 'description', 'sort'],
         'prefs'  => ['user_id', 'k', 'v'],
@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $act === 'export') {
     header('Cache-Control: no-store');
     $dump = [
         'app' => 'itswe-nav',
-        'version' => 1,
+        'version' => 2,
         'exported_at' => date('c'),
         // smtp_pass 不随备份导出（防网盘泄密）；导入时该键缺失即保留现值，与设置页「留空不改」对称
         'site_prefs' => array_values(array_filter(
@@ -72,6 +72,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $act === 'import') {
     foreach ($json['groups'] as $g) {
         if (!isset($g['id'], $g['user_id'], $g['name'])) $bad(t('import_bad_file'));
     }
+    // 旧格式备份（v1.0.0）无 email 键：归一为空串，避免 NOT NULL 约束回滚
+    foreach ($json['users'] as &$u) { $u['email'] = trim((string)($u['email'] ?? '')); }
+    unset($u);
     try {
         $pdo->beginTransaction();
         foreach (['items', 'groups', 'login_throttle', 'prefs', 'users'] as $tbl) {

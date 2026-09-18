@@ -289,13 +289,17 @@ CODE=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/backup.php?act=export")
 eq "未登录导出 401" "$CODE" "401"
 CODE=$(curl -s -o /dev/null -w '%{http_code}' -b $JAR "$BASE/backup.php?act=export")
 eq "普通用户导出 403" "$CODE" "403"
+docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); \$p->exec(\"UPDATE users SET email='bk@example.com' WHERE username='admin'\");"
 curl -s -b $JAR2 "$BASE/backup.php?act=export" > /tmp/bk.json
+grep -q '"email"' /tmp/bk.json && ok "备份包含 email" || bad "备份缺 email 字段"
 has "导出含应用标识" '"app":"itswe-nav"' /tmp/bk.json
 has "导出含用户哈希(可完整恢复)" 'password_hash' /tmp/bk.json
 grep -q '"username":"tester1"' /tmp/bk.json && ok "导出含 tester1" || bad "导出含 tester1"
 # 导入同一份备份 → 数据往返一致
 N0=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); echo \$p->query('SELECT COUNT(*) FROM items')->fetchColumn();")
 R=$(curl -s -b $JAR2 -F "csrf=$CSRF2" -F "act=import" -F "file=@/tmp/bk.json;type=application/json" $BASE/backup.php); r "$R"
+E=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); echo \$p->query(\"SELECT email FROM users WHERE username='admin'\")->fetchColumn();")
+[ "$E" = "bk@example.com" ] && ok "导入后 email 保留" || bad "导入丢失 email: [$E]"
 has "导入 ok" '"ok":true' $RF
 N1=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); echo \$p->query('SELECT COUNT(*) FROM items')->fetchColumn();")
 eq "导入后卡片数一致" "$N1" "$N0"
@@ -304,6 +308,14 @@ R=$(curl -s -b $JAR2 -F "csrf=$CSRF2" -F "act=import" -F "file=@/tmp/bk-bad.json
 has "坏文件被拒" '备份文件格式不正确' $RF
 CODE=$(curl -s -o /dev/null -w '%{http_code}' -b $JAR "$BASE/backup.php?act=export")
 eq "普通用户导出备份 403(备份口)" "$CODE" "403"
+# —— 旧格式备份（v1.0.0 导出，无 email 键）仍可导入 ——
+docker cp /tmp/bk.json itswe-nav-test:/tmp/bk.json
+docker exec itswe-nav-test php -r '$j=json_decode(file_get_contents("/tmp/bk.json"),true); foreach($j["users"] as &$r) unset($r["email"]); file_put_contents("/tmp/bk-old.json",json_encode($j,JSON_UNESCAPED_UNICODE));'
+docker cp itswe-nav-test:/tmp/bk-old.json /tmp/bk-old.json
+R=$(curl -s -b $JAR2 -F "csrf=$CSRF2" -F "act=import" -F "file=@/tmp/bk-old.json;type=application/json" $BASE/backup.php); r "$R"
+has "旧格式备份(无email)可导入" '"ok":true' $RF
+E=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); echo \$p->query(\"SELECT email FROM users WHERE username='admin'\")->fetchColumn();")
+[ "$E" = "" ] && ok "旧格式导入 email 落空串" || bad "旧格式导入 email 异常: [$E]"
 # 语言测试后置：恢复自动（17.8 已把语言设回 auto）……
 
 # 17.98 邮件验证码功能
