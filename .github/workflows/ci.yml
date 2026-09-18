@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t itswe-nav:ci .
+
+      - name: Coverage suite (~55 assertions)
+        run: bash run-tests-ci.sh cov
+
+      - name: E2E suite (148 assertions)
+        run: bash run-tests-ci.sh e2e
+
+      - name: Migration suite (v1 legacy DB)
+        run: bash run-tests-ci.sh migration
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f itswe-nav-test >/dev/null 2>&1 || true

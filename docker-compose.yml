@@ -1,0 +1,16 @@
+services:
+  itswe-nav:
+    build: .
+    image: itswe-nav:latest
+    container_name: itswe-nav
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      # 默认不挂载 docker.sock（更安全）。需要 Docker 管理功能时，取消下一行注释。
+      # ⚠️ 挂载 sock 即信任面板全部管理员账号（可启停宿主机任意容器）——公网部署务必强口令并保持注册关闭。
+      # - /var/run/docker.sock:/var/run/docker.sock
+    # environment:              # 可选项：
+    #   TZ=UTC                  #   改回 UTC（默认 Asia/Shanghai）
+    #   DB_PATH=/app/data/itswe-nav.db
+    restart: unless-stopped

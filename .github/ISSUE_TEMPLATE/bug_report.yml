@@ -1,0 +1,40 @@
+name: Bug report / 反馈问题
+description: 报告一个可复现的问题（中英文均可 / in Chinese or English）
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！提问前请先浏览 [FAQ](https://github.com/showhoo/itswe-nav/blob/main/docs/faq.md) 与 [文档](https://github.com/showhoo/itswe-nav/tree/main/docs)。
+        Thanks for reporting! Please check the [FAQ](https://github.com/showhoo/itswe-nav/blob/main/docs/faq.md) and [docs](https://github.com/showhoo/itswe-nav/tree/main/docs) first.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述 / What happened?
+      description: 期望行为 vs 实际行为 / Expected behavior vs actual behavior
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本 / Version
+      description: 镜像 tag 或 commit hash / image tag or commit hash
+      placeholder: e.g. v1.0.0-beta / main@2f53975
+    validations:
+      required: true
+
+  - type: textarea
+    id: deploy
+    attributes:
+      label: 部署方式 / Deployment
+      description: compose 还是裸 docker？反代类型？是否挂载 docker.sock？/ compose or plain docker? reverse proxy? docker.sock mounted?
+      placeholder: e.g. docker compose behind nginx, sock mounted
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关日志 / Relevant logs
+      description: `docker logs itswe-nav` 或浏览器控制台输出 / docker logs or browser console output
+      render: shell
