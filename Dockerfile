@@ -4,7 +4,7 @@
 FROM php:8.3-cli-alpine@sha256:afdf8b1fee58486ccc0dab5f30f634b86873d56dac985f71ba217945647c05ad
 
 LABEL org.opencontainers.image.title="ITSWE-Nav 简约导航" \
-      org.opencontainers.image.description="轻量多用户导航面板：分组卡片 / 内外网切换 / 服务器监控 / Docker 管理" \
+      org.opencontainers.image.description="Lightweight self-hosted start page & bookmark dashboard: LAN/WAN dual addresses, server monitoring, Docker management, multi-user. 轻量级自托管导航页：内外网切换 · 服务器监控 · Docker 管理 · 多用户" \
       org.opencontainers.image.licenses="MIT"
 
 WORKDIR /app
