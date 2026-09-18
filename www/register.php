@@ -50,7 +50,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['uid'] = (int)db()->lastInsertId();
             header('Location: index.php'); exit;
         } catch (PDOException) {
-            $msgKey = 'err_taken';
+            // 用户名冲突或撞上 users.email 唯一索引（并发竞态兜底）——按实际占用者区分文案
+            $st = db()->prepare('SELECT COUNT(*) FROM users WHERE lower(email) = ?');
+            $st->execute([$email]);
+            $msgKey = ($email !== '' && (int)$st->fetchColumn() > 0) ? 'err_email_taken' : 'err_taken';
         }
     }
 }

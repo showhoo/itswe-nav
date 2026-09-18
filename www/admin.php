@@ -214,7 +214,7 @@ function fmtB(b) {
 }
 // —— 支持 admin.php?tab=server 直达指定标签 ——
 const wantTab = new URLSearchParams(location.search).get('tab');
-if (wantTab) document.querySelector(`.admin-tabs .tab[data-tab="${wantTab}"]`)?.click();
+if (['users', 'pref', 'site', 'server'].includes(wantTab)) document.querySelector(`.admin-tabs .tab[data-tab="${wantTab}"]`)?.click();
 // —— 标签页切换 ——
 document.querySelectorAll('.admin-tabs .tab').forEach(t => t.onclick = () => {
     document.querySelectorAll('.admin-tabs .tab').forEach(x => x.classList.toggle('active', x === t));

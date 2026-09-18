@@ -351,6 +351,11 @@ U=$(docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.d
 eq "simuser 已入库" "$U" "ok"
 R=$(curl -s -b $JAR2 -d "csrf=$CSRF2&act=site.set&mail_verify=0" $BASE/api.php); r "$R"
 has "关闭邮箱验证 ok" '"ok":true' $RF
+# —— 注册邮箱唯一性：第二个同邮箱注册被拒 ——
+CODE=$(curl -s -b $JAR -c $JAR -o /dev/null -w '%{http_code}' -d "csrf=$CSRF&act=register&username=dup1&password=x123456&email=dup@example.com&agree=1" $BASE/register.php)
+[ "$CODE" = "302" ] && ok "dup1 注册成功" || bad "dup1 注册 $CODE"
+curl -s -b $JAR -d "csrf=$CSRF&act=register&username=dup2&password=x123456&email=dup@example.com&agree=1" $BASE/register.php | grep -q '已被其他账号使用' && ok "重复邮箱被拒" || bad "重复邮箱未拦截"
+docker exec itswe-nav-test php -r "\$p=new PDO('sqlite:/app/data/itswe-nav.db'); \$p->exec(\"DELETE FROM users WHERE username LIKE 'dup%'\");" >/dev/null
 # —— 每 IP 发码限速：跨邮箱 10 封/小时，第 11 次起拒绝 ——
 # 先把 SMTP 显式重设回不可达端口（此前的 mock 会话段把 SMTP 指向了常驻 mock 的 2525）；
 # 发送尝试前计数、失败同样计数：前 10 次均到达 SMTP 并报连接失败，第 11-12 次被限速拒绝
