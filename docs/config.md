@@ -54,4 +54,4 @@ When a card has both an external and an internal URL, the 🌐 button picks one 
 ## Footer credit
 
 "Powered by + icon" lives in site-level prefs (`credit_*`); the admin UI deliberately offers no switch.
-Deleting the rows falls back to the code defaults; clearing them hides the footer and shows a local-only missing-credit notice in the admin panel (no reporting). The default link points to www.itswe.com.
+Deleting the rows falls back to the code defaults; clearing them hides the footer and shows a local-only missing-credit notice in the admin panel (no reporting). The default link points to [www.itswe.com](https://www.itswe.com).

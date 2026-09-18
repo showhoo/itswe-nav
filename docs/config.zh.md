@@ -55,4 +55,4 @@
 
 「Powered by + 图标」存于站点级偏好（`credit_*`），管理界面刻意不提供开关；
 删除数据行会回退到代码默认值，清空则隐藏页脚并在管理后台显示本地缺失提醒（无上报）。
-默认链接指向 www.itswe.com。
+默认链接指向 [www.itswe.com](https://www.itswe.com)。

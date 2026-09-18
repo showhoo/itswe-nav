@@ -140,7 +140,7 @@ The panel embeds **no analytics, telemetry or remote checks**. All data lives in
 
 ## ⭐ Footer credit & showcase
 
-ITSWE-Nav is free and MIT-licensed. The **"Powered by" badge** in the footer is this project's only promotion — it sits quietly at the bottom of every page, linking to www.itswe.com by default. Keeping that little line is the most tangible way to support the project. Thank you!
+ITSWE-Nav is free and MIT-licensed. The **"Powered by" badge** in the footer is this project's only promotion — it sits quietly at the bottom of every page, linking to [www.itswe.com](https://www.itswe.com) by default. Keeping that little line is the most tangible way to support the project. Thank you!
 
 - The admin UI deliberately offers **no switch** to remove or edit the credit;
 - If you truly must (e.g. strict corporate intranet policies), technically you can modify `www/lib/credit.php` and the database seed — may it be a considered decision, not a drive-by deletion;
